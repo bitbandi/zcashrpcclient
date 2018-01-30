@@ -54,8 +54,8 @@ type ZGetTotalBalanceCmd struct {
 //
 // The parameters which are pointers indicate they are optional. Passing nil
 // for optional parameters will use the default value.
-func NewZGetTotalBalanceCmd() *ZGetTotalBalanceCmd {
-	return &ZGetTotalBalanceCmd{}
+func NewZGetTotalBalanceCmd(minConf *int) *ZGetTotalBalanceCmd {
+	return &ZGetTotalBalanceCmd{MinConf: minConf}
 }
 
 // ZListReceivedByAddressCmd defines the z_listreceivedbyaddress JSON-RPC command.

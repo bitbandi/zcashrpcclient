@@ -8,7 +8,7 @@ package zcashrpcclient
 import (
 	"encoding/json"
 
-	"github.com/arithmetric/zcashrpcclient/zcashjson"
+	"github.com/bitbandi/zcashrpcclient/zcashjson"
 	"github.com/btcsuite/btcutil"
 )
 
@@ -298,8 +298,25 @@ func (c *Client) ZGetBalance(address string) (btcutil.Amount, error) {
 	return c.ZGetBalanceAsync(address).Receive()
 }
 
+// ZGetBalanceMinConfAsync returns an instance of a type that can be used to get the
+// result of the RPC at some future time by invoking the Receive function on the
+// returned instance.
+//
+// See ZGetBalanceMinConf for the blocking version and more details.
+func (c *Client) ZGetBalanceMinConfAsync(address string, minConf int) FutureZGetBalanceResult {
+	cmd := zcashjson.NewZGetBalanceCmd(&address, &minConf)
+	return c.sendCmd(cmd)
+}
+
+// ZGetBalanceMinConf returns the available balance from the server for the specified
+// account using the number of confirmations.  The account may
+// be "*" for all accounts.
+func (c *Client) ZGetBalanceMinConf(address string, minConf int) (btcutil.Amount, error) {
+	return c.ZGetBalanceMinConfAsync(address, minConf).Receive()
+}
+
 // FutureZGetTotalBalanceResult is a future promise to deliver the result of a
-// ZGetTotalBalanceAsync RPC invocation (or an applicable error).
+// ZGetTotalBalanceAsync or ZGetTotalBalanceMinConfAsync RPC invocation (or an applicable error).
 type FutureZGetTotalBalanceResult chan *response
 
 // Receive waits for the response promised by the future and returns the
@@ -326,7 +343,7 @@ func (r FutureZGetTotalBalanceResult) Receive() (*zcashjson.ZGetTotalBalanceResu
 //
 // See ZGetTotalBalance for the blocking version and more details.
 func (c *Client) ZGetTotalBalanceAsync() FutureZGetTotalBalanceResult {
-	cmd := zcashjson.NewZGetTotalBalanceCmd()
+	cmd := zcashjson.NewZGetTotalBalanceCmd(nil)
 	return c.sendCmd(cmd)
 }
 
@@ -334,6 +351,22 @@ func (c *Client) ZGetTotalBalanceAsync() FutureZGetTotalBalanceResult {
 // all addresses in the wallet.
 func (c *Client) ZGetTotalBalance() (*zcashjson.ZGetTotalBalanceResult, error) {
 	return c.ZGetTotalBalanceAsync().Receive()
+}
+
+// ZGetTotalBalanceMinConfAsync returns an instance of a type that can be used to get
+// the result of the RPC at some future time by invoking the Receive function on
+// the returned instance.
+//
+// See ZGetTotalBalanceMinConf for the blocking version and more details.
+func (c *Client) ZGetTotalBalanceMinConfAsync(minConf int) FutureZGetTotalBalanceResult {
+	cmd := zcashjson.NewZGetTotalBalanceCmd(&minConf)
+	return c.sendCmd(cmd)
+}
+
+// ZGetTotalBalanceMinConf returns the transparent, private, and total balances for
+// all addresses in the wallet.
+func (c *Client) ZGetTotalBalanceMinConf(minConf int) (*zcashjson.ZGetTotalBalanceResult, error) {
+	return c.ZGetTotalBalanceMinConfAsync(minConf).Receive()
 }
 
 // FutureZListReceivedByAddressResult is a future promise to deliver the result
