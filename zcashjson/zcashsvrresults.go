@@ -40,9 +40,9 @@ type ZGetOperationStatusResult struct {
 
 // ZGetTotalBalanceResult models the data from the z_gettotalbalance command.
 type ZGetTotalBalanceResult struct {
-	Transparent string `json:"transparent"`
-	Private     string `json:"private"`
-	Total       string `json:"total"`
+	Transparent float64 `json:"transparent,string"`
+	Private     float64 `json:"private,string"`
+	Total       float64 `json:"total,string"`
 }
 
 // ZListReceivedByAddressResult models the data from the z_listreceivedbyaddress
