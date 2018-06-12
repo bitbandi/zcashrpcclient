@@ -12,6 +12,26 @@ import (
 	"github.com/btcsuite/btcd/btcjson"
 )
 
+// ListAllTransactionsCmd defines the listreceivedbyaccount JSON-RPC command.
+type ListAllTransactionsCmd struct {
+	MinConf          *int  `jsonrpcdefault:"1"`
+	IncludeEmpty     *bool `jsonrpcdefault:"false"`
+	IncludeWatchOnly *bool `jsonrpcdefault:"false"`
+}
+
+// NewListAllTransactionsCmd returns a new instance which can be used to issue
+// a listreceivedbyaccount JSON-RPC command.
+//
+// The parameters which are pointers indicate they are optional.  Passing nil
+// for optional parameters will use the default value.
+func NewListAllTransactionsCmd(minConf *int, includeEmpty, includeWatchOnly *bool) *ListAllTransactionsCmd {
+	return &ListAllTransactionsCmd{
+		MinConf:          minConf,
+		IncludeEmpty:     includeEmpty,
+		IncludeWatchOnly: includeWatchOnly,
+	}
+}
+
 // ZGetBalanceCmd defines the z_getbalance JSON-RPC command.
 type ZGetBalanceCmd struct {
 	Address *string
@@ -229,6 +249,8 @@ func NewZSendManyCmd(fromAccount string, amounts []ZSendManyEntry, minConf *int)
 func init() {
 	// The commands in this file are only usable with a wallet server.
 	flags := btcjson.UFWalletOnly
+
+	btcjson.MustRegisterCmd("listalltransactions", (*ListAllTransactionsCmd)(nil), flags)
 
 	btcjson.MustRegisterCmd("z_exportkey", (*ZExportKeyCmd)(nil), flags)
 	btcjson.MustRegisterCmd("z_exportwallet", (*ZExportWalletCmd)(nil), flags)

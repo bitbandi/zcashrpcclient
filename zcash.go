@@ -12,6 +12,94 @@ import (
 	"github.com/btcsuite/btcutil"
 )
 
+// FutureListAllTransactionsResult is a future promise to deliver the result
+// of a ListAllTransactionsAsync, ListAllTransactionsMinConfAsync, or
+// ListAllTransactionsIncludeEmptyAsync RPC invocation (or an applicable
+// error).
+type FutureListAllTransactionsResult chan *response
+
+// Receive waits for the response promised by the future and returns a list of
+// balances by account.
+func (r FutureListAllTransactionsResult) Receive() ([]zcashjson.ListAllTransactionsResult, error) {
+	res, err := receiveFuture(r)
+	if err != nil {
+		return nil, err
+	}
+
+	// Unmarshal as an array of listreceivedbyaccount result objects.
+	var received []zcashjson.ListAllTransactionsResult
+	err = json.Unmarshal(res, &received)
+	if err != nil {
+		return nil, err
+	}
+
+	return received, nil
+}
+
+// ListAllTransactionsAsync returns an instance of a type that can be used to
+// get the result of the RPC at some future time by invoking the Receive
+// function on the returned instance.
+//
+// See ListAllTransactions for the blocking version and more details.
+func (c *Client) ListAllTransactionsAsync() FutureListAllTransactionsResult {
+	cmd := zcashjson.NewListAllTransactionsCmd(nil, nil, nil)
+	return c.sendCmd(cmd)
+}
+
+// ListAllTransactions lists balances by account using the default number
+// of minimum confirmations and including accounts that haven't received any
+// payments.
+//
+// See ListAllTransactionsMinConf to override the minimum number of
+// confirmations and ListAllTransactionsIncludeEmpty to filter accounts that
+// haven't received any payments from the results.
+func (c *Client) ListAllTransactions() ([]zcashjson.ListAllTransactionsResult, error) {
+	return c.ListAllTransactionsAsync().Receive()
+}
+
+// ListAllTransactionsMinConfAsync returns an instance of a type that can be
+// used to get the result of the RPC at some future time by invoking the Receive
+// function on the returned instance.
+//
+// See ListAllTransactionsMinConf for the blocking version and more details.
+func (c *Client) ListAllTransactionsMinConfAsync(minConfirms int) FutureListAllTransactionsResult {
+	cmd := zcashjson.NewListAllTransactionsCmd(&minConfirms, nil, nil)
+	return c.sendCmd(cmd)
+}
+
+// ListAllTransactionsMinConf lists balances by account using the specified
+// number of minimum confirmations not including accounts that haven't received
+// any payments.
+//
+// See ListAllTransactions to use the default minimum number of confirmations
+// and ListAllTransactionsIncludeEmpty to also include accounts that haven't
+// received any payments in the results.
+func (c *Client) ListAllTransactionsMinConf(minConfirms int) ([]zcashjson.ListAllTransactionsResult, error) {
+	return c.ListAllTransactionsMinConfAsync(minConfirms).Receive()
+}
+
+// ListAllTransactionsIncludeEmptyAsync returns an instance of a type that can
+// be used to get the result of the RPC at some future time by invoking the
+// Receive function on the returned instance.
+//
+// See ListAllTransactionsIncludeEmpty for the blocking version and more details.
+func (c *Client) ListAllTransactionsIncludeEmptyAsync(minConfirms int, includeEmpty bool) FutureListAllTransactionsResult {
+	cmd := zcashjson.NewListAllTransactionsCmd(&minConfirms, &includeEmpty,
+		nil)
+	return c.sendCmd(cmd)
+}
+
+// ListAllTransactionsIncludeEmpty lists balances by account using the
+// specified number of minimum confirmations and including accounts that
+// haven't received any payments depending on specified flag.
+//
+// See ListAllTransactions and ListAllTransactionsMinConf to use defaults.
+func (c *Client) ListAllTransactionsIncludeEmpty(minConfirms int, includeEmpty bool) ([]zcashjson.ListAllTransactionsResult, error) {
+	return c.ListAllTransactionsIncludeEmptyAsync(minConfirms,
+		includeEmpty).Receive()
+}
+
+
 // ***************************
 // Operation Listing Functions
 // ***************************
