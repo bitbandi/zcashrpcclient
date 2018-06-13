@@ -250,7 +250,7 @@ func init() {
 	// The commands in this file are only usable with a wallet server.
 	flags := btcjson.UFWalletOnly
 
-	btcjson.MustRegisterCmd("listalltransactions", (*ListAllTransactionsCmd)(nil), flags)
+	btcjson.MustRegisterCmd("listalltransactions2", (*ListAllTransactionsCmd)(nil), flags)
 
 	btcjson.MustRegisterCmd("z_exportkey", (*ZExportKeyCmd)(nil), flags)
 	btcjson.MustRegisterCmd("z_exportwallet", (*ZExportWalletCmd)(nil), flags)
