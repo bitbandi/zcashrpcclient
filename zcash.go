@@ -496,6 +496,101 @@ func (c *Client) ZListReceivedByAddress(address string) ([]zcashjson.ZListReceiv
 	return c.ZListReceivedByAddressAsync(address).Receive()
 }
 
+// FutureZListUnspentResult is a future promise to deliver the result of a
+// ZListUnspentAsync, ZListUnspentMinAsync, ZListUnspentMinMaxAsync, or
+// ZListUnspentMinMaxAddressesAsync RPC invocation (or an applicable error).
+type FutureZListUnspentResult chan *response
+
+// Receive waits for the response promised by the future and returns all
+// unspent wallet transaction outputs returned by the RPC call.  If the
+// future wac returnd by a call to ZListUnspentMinAsync, ZListUnspentMinMaxAsync,
+// or ZListUnspentMinMaxAddressesAsync, the range may be limited by the
+// parameters of the RPC invocation.
+func (r FutureZListUnspentResult) Receive() ([]zcashjson.ZListUnspentResult, error) {
+	res, err := receiveFuture(r)
+	if err != nil {
+		return nil, err
+	}
+
+	// Unmarshal result as an array of listunspent results.
+	var unspent []zcashjson.ZListUnspentResult
+	err = json.Unmarshal(res, &unspent)
+	if err != nil {
+		return nil, err
+	}
+
+	return unspent, nil
+}
+
+// ZListUnspentAsync returns an instance of a type that can be used to get
+// the result of the RPC at some future time by invoking the Receive function
+// on the returned instance.
+//
+// See ZListUnspent for the blocking version and more details.
+func (c *Client) ZListUnspentAsync() FutureZListUnspentResult {
+	cmd := zcashjson.NewZListUnspentCmd(nil, nil, nil, nil)
+	return c.sendCmd(cmd)
+}
+
+// ZListUnspentMinAsync returns an instance of a type that can be used to get
+// the result of the RPC at some future time by invoking the Receive function
+// on the returned instance.
+//
+// See ZListUnspentMin for the blocking version and more details.
+func (c *Client) ZListUnspentMinAsync(minConf int) FutureZListUnspentResult {
+	cmd := zcashjson.NewZListUnspentCmd(&minConf, nil, nil, nil)
+	return c.sendCmd(cmd)
+}
+
+// ZListUnspentMinMaxAsync returns an instance of a type that can be used to get
+// the result of the RPC at some future time by invoking the Receive function
+// on the returned instance.
+//
+// See ZListUnspentMinMax for the blocking version and more details.
+func (c *Client) ZListUnspentMinMaxAsync(minConf, maxConf int) FutureZListUnspentResult {
+	cmd := zcashjson.NewZListUnspentCmd(&minConf, &maxConf, nil, nil)
+	return c.sendCmd(cmd)
+}
+
+// ZListUnspentMinMaxAddressesAsync returns an instance of a type that can be
+// used to get the result of the RPC at some future time by invoking the Receive
+// function on the returned instance.
+//
+// See ZListUnspentMinMaxAddresses for the blocking version and more details.
+func (c *Client) ZListUnspentMinMaxAddressesAsync(minConf, maxConf int, addrs []string) FutureZListUnspentResult {
+	watchonly := false
+	cmd := zcashjson.NewZListUnspentCmd(&minConf, &maxConf, &watchonly, &addrs)
+	return c.sendCmd(cmd)
+}
+
+// ZListUnspent returns all unspent private transaction outputs known to a wallet,
+// using the default number of minimum and maximum number of confirmations as a
+// filter (1 and 999999, respectively).
+func (c *Client) ZListUnspent() ([]zcashjson.ZListUnspentResult, error) {
+	return c.ZListUnspentAsync().Receive()
+}
+
+// ZListUnspentMin returns all unspent private transaction outputs known to a wallet,
+// using the specified number of minimum conformations and default number of
+// maximum confiramtions (999999) as a filter.
+func (c *Client) ZListUnspentMin(minConf int) ([]zcashjson.ZListUnspentResult, error) {
+	return c.ZListUnspentMinAsync(minConf).Receive()
+}
+
+// ZListUnspentMinMax returns all unspent private transaction outputs known to a wallet,
+// using the specified number of minimum and maximum number of confirmations as
+// a filter.
+func (c *Client) ZListUnspentMinMax(minConf, maxConf int) ([]zcashjson.ZListUnspentResult, error) {
+	return c.ZListUnspentMinMaxAsync(minConf, maxConf).Receive()
+}
+
+// ZListUnspentMinMaxAddresses returns all unspent private transaction outputs that
+// pay to any of specified addresses in a wallet using the specified number of
+// minimum and maximum number of confirmations as a filter.
+func (c *Client) ZListUnspentMinMaxAddresses(minConf, maxConf int, addrs []string) ([]zcashjson.ZListUnspentResult, error) {
+	return c.ZListUnspentMinMaxAddressesAsync(minConf, maxConf, addrs).Receive()
+}
+
 // ***********************
 // Export/Import Functions
 // ***********************

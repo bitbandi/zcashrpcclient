@@ -63,3 +63,15 @@ type ZListReceivedByAddressResult struct {
 	Amount float64 `json:"amount"`
 	Memo   string  `json:"memo"`
 }
+
+// ZListUnspentResult models a successful response from the z_listunspent request.
+type ZListUnspentResult struct {
+	TxID          string  `json:"txid"`
+	JsIndex       uint32  `json:"jsindex"`
+	JsOutIndex    uint32  `json:"jsoutindex"`
+	Address       string  `json:"address"`
+	Memo          string  `json:"memo"`
+	Amount        float64 `json:"amount"`
+	Confirmations int64   `json:"confirmations"`
+	Spendable     bool    `json:"spendable"`
+}

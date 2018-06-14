@@ -246,6 +246,27 @@ func NewZSendManyCmd(fromAccount string, amounts []ZSendManyEntry, minConf *int)
 	}
 }
 
+// ZListUnspentCmd defines the z_listunspent JSON-RPC command.
+type ZListUnspentCmd struct {
+	MinConf          *int  `jsonrpcdefault:"1"`
+	MaxConf          *int  `jsonrpcdefault:"9999999"`
+	IncludeWatchOnly *bool `jsonrpcdefault:"false"`
+	Addresses        *[]string
+}
+
+// NewZListUnspentCmd returns a new instance which can be used to issue a
+// z_listunspent JSON-RPC command.
+//
+// The parameters which are pointers indicate they are optional.  Passing nil
+// for optional parameters will use the default value.
+func NewZListUnspentCmd(minConf, maxConf *int, includeWatchOnly *bool, addresses *[]string) *ZListUnspentCmd {
+	return &ZListUnspentCmd{
+		MinConf:          minConf,
+		MaxConf:          maxConf,
+		IncludeWatchOnly: includeWatchOnly,
+		Addresses:        addresses,
+	}
+}
 func init() {
 	// The commands in this file are only usable with a wallet server.
 	flags := btcjson.UFWalletOnly
@@ -264,5 +285,6 @@ func init() {
 	btcjson.MustRegisterCmd("z_listaddresses", (*ZListAddressesCmd)(nil), flags)
 	btcjson.MustRegisterCmd("z_listoperationids", (*ZListOperationIdsCmd)(nil), flags)
 	btcjson.MustRegisterCmd("z_listreceivedbyaddress", (*ZListReceivedByAddressCmd)(nil), flags)
+	btcjson.MustRegisterCmd("z_listunspent", (*ZListUnspentCmd)(nil), flags)
 	btcjson.MustRegisterCmd("z_sendmany", (*ZSendManyCmd)(nil), flags)
 }
